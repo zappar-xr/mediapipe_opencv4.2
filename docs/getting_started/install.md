@@ -64,8 +64,13 @@ install --user six`.
         libopencv-calib3d-dev \
         libopencv-features2d-dev \
         libopencv-imgproc-dev \
-        libopencv-video-dev
+        libopencv-video-dev \
+        libopencv-videoio-dev \
+        libopencv-contrib-dev
     ```
+
+    `libopencv-contrib-dev` is for the usage of optflow. If you cannot install with `apt-get`, try `aptitude`, this will automatically install the dependencies of the package.
+
 
     MediaPipe's [`opencv_linux.BUILD`] and [`WORKSPACE`] are already configured
     for OpenCV 2/3 and should work correctly on any architecture:
