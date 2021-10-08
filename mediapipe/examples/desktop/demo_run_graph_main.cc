@@ -27,6 +27,10 @@
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status.h"
 
+#include <chrono>
+
+void printFPS();
+
 constexpr char kInputStream[] = "input_video";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
@@ -108,6 +112,8 @@ absl::Status RunMPPGraph() {
     cv::Mat input_frame_mat = mediapipe::formats::MatView(input_frame.get());
     camera_frame.copyTo(input_frame_mat);
 
+    auto start = std::chrono::system_clock::now();
+
     // Send image packet into the graph.
     size_t frame_timestamp_us =
         (double)cv::getTickCount() / (double)cv::getTickFrequency() * 1e6;
@@ -119,6 +125,12 @@ absl::Status RunMPPGraph() {
     mediapipe::Packet packet;
     if (!poller.Next(&packet)) break;
     auto& output_frame = packet.Get<mediapipe::ImageFrame>();
+
+    std::chrono::duration<double> diff = std::chrono::system_clock::now() - start;
+
+    int fps = 1 / diff.count();
+
+    std::cout << "FPS: "  << fps << std::endl;
 
     // Convert back to opencv for display or saving.
     cv::Mat output_frame_mat = mediapipe::formats::MatView(&output_frame);
@@ -157,4 +169,17 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Success!";
   }
   return EXIT_SUCCESS;
+}
+
+
+
+void printFPS() {
+    static std::chrono::time_point<std::chrono::system_clock> oldTime = std::chrono::system_clock::now();
+    static int fps; fps++;
+
+    if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - oldTime) >= std::chrono::seconds{ 1 }) {
+        oldTime = std::chrono::system_clock::now();
+        std::cout << "FPS: " << fps <<  std::endl;
+        fps = 0;
+    }
 }
