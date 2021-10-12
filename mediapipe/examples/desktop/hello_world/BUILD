@@ -28,6 +28,7 @@ cc_binary(
         "//mediapipe/framework/port:status",
         "//mediapipe/framework/port:opencv_highgui",
         "//mediapipe/framework:calculator_framework",
+        "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler",
         "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler_cc_proto",
     ],
 )
