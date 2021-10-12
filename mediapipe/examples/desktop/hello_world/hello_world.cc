@@ -114,6 +114,11 @@ absl::Status PrintHelloWorld() {
   CalculatorGraphConfig config =
       mediapipe::ParseTextProtoOrDie<CalculatorGraphConfig>(
           R"pb(
+            profiler_config {
+              trace_enabled: true
+              enable_profiler: true
+              trace_log_interval_count: 200
+            }
             input_stream: "in_0"
             input_stream: "in_1"
             input_stream: "in_2"
@@ -162,7 +167,7 @@ absl::Status PrintHelloWorld() {
                         &output_packets[i]);
   }
   CalculatorGraph graph;
-  MP_RETURN_IF_ERROR(graph.Initialize(config, {}));
+  MP_RETURN_IF_ERROR(graph.Initialize(config));
   MP_RETURN_IF_ERROR(graph.StartRun({}));
 
   {
