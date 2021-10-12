@@ -20,10 +20,12 @@
 #include "mediapipe/framework/port/status.h"
 #include "mediapipe/framework/port/opencv_highgui_inc.h"
 #include "mediapipe/framework/calculator_framework.h"
+#include "mediapipe/framework/stream_handler/fixed_size_input_stream_handler.pb.h"
+#include "mediapipe/framework/port/threadpool.h"
 
 
 namespace mediapipe {
-class PassThroughCalculator1 : public CalculatorBase {
+class FixedPassThroughCalculator : public CalculatorBase {
  public:
   static absl::Status GetContract(CalculatorContract* cc) {
     if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap())) {
@@ -53,6 +55,18 @@ class PassThroughCalculator1 : public CalculatorBase {
             &cc->InputSidePackets().Get(id));
       }
     }
+
+    // Assign this calculator's InputStreamHandler and options.
+    cc->SetInputStreamHandler("FixedSizeInputStreamHandler");
+    MediaPipeOptions options;
+    options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
+        ->set_fixed_min_size(2);
+    options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
+        ->set_trigger_queue_size(2);
+    options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
+        ->set_target_queue_size(2);
+    cc->SetInputStreamHandlerOptions(options);
+
     return absl::OkStatus();
   }
 
@@ -90,44 +104,96 @@ class PassThroughCalculator1 : public CalculatorBase {
     return absl::OkStatus();
   }
 };
-REGISTER_CALCULATOR(PassThroughCalculator1);
+REGISTER_CALCULATOR(FixedPassThroughCalculator);
+
+
+
 absl::Status PrintHelloWorld() {
   // Configures a simple graph, which concatenates 2 PassThroughCalculators.
+  #define NUM_STREAMS 4
   CalculatorGraphConfig config =
-      ParseTextProtoOrDie<CalculatorGraphConfig>(R"pb(
-        input_stream: "in"
-        output_stream: "out"
-        node {
-          calculator: "PassThroughCalculator1"
-          input_stream: "in"
-          output_stream: "out1"
-        }
-        node {
-          calculator: "PassThroughCalculator1"
-          input_stream: "out1"
-          output_stream: "out"
-        }
-      )pb");
+      mediapipe::ParseTextProtoOrDie<CalculatorGraphConfig>(
+          R"pb(
+            input_stream: "in_0"
+            input_stream: "in_1"
+            input_stream: "in_2"
+            input_stream: "in_3"
+            node {
+              calculator: "FixedPassThroughCalculator"
+              input_stream: "in_0"
+              input_stream: "in_1"
+              input_stream: "in_2"
+              input_stream: "in_3"
+              output_stream: "out_0"
+              output_stream: "out_1"
+              output_stream: "out_2"
+              output_stream: "out_3"
+              # FixedSizeInputStreamHandler set in GetContract()
+            })pb");
+  // CalculatorGraph graph;
+  // MP_RETURN_IF_ERROR(graph.Initialize(config));
+  // ASSIGN_OR_RETURN(OutputStreamPoller poller_0,
+  //                  graph.AddOutputStreamPoller("out_0"));
+  // // ASSIGN_OR_RETURN(OutputStreamPoller poller_1,
+  // //                  graph.AddOutputStreamPoller("out_1"));
+  // MP_RETURN_IF_ERROR(graph.StartRun({}));
+  // // Give 10 input packets that contains the same std::string "Hello World!".
+  // for (int i = 0; i < 10; ++i) {
+  //   MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+  //       "in_0", MakePacket<std::string>("hello, world").At(Timestamp(i))));
+  //   MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+  //       "in_1", MakePacket<int64>(cv::getTickCount()).At(Timestamp(i))));
+  // }
+  // // Close the input stream "in".
+  // MP_RETURN_IF_ERROR(graph.CloseInputStream("in_0"));
+  // // MP_RETURN_IF_ERROR(graph.CloseInputStream("in_1"));
+  // mediapipe::Packet packet_0, packet_1;
+  // // Get the output packets std::string.
+  // while (poller_0.Next(&packet_0) ) {
+  //   LOG(INFO) << packet_0.Get<std::string>();
+  // // while (poller_0.Next(&packet_0) && poller_1.Next(&packet_1)) {
+  // //   LOG(INFO) << packet_0.Get<std::string>() << packet_1.Get<int64>();
+  // }
 
+///////////////////////
+  std::vector<Packet> output_packets[NUM_STREAMS];
+  for (int i = 0; i < NUM_STREAMS; ++i) {
+    tool::AddVectorSink(absl::StrCat("out_", i), &config,
+                        &output_packets[i]);
+  }
   CalculatorGraph graph;
-  MP_RETURN_IF_ERROR(graph.Initialize(config));
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
-                   graph.AddOutputStreamPoller("out"));
+  MP_RETURN_IF_ERROR(graph.Initialize(config, {}));
   MP_RETURN_IF_ERROR(graph.StartRun({}));
-  // Give 10 input packets that contains the same std::string "Hello World!".
-  for (int i = 0; i < 10; ++i) {
-    MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-        "in", MakePacket<int64>(cv::getTickCount()).At(Timestamp(i))));
+
+  {
+    mediapipe::ThreadPool pool(NUM_STREAMS);
+    pool.StartWorkers();
+
+    // Start writers.
+    for (int w = 0; w < NUM_STREAMS; ++w) {
+      pool.Schedule([&, w]() {
+        std::string stream_name = absl::StrCat("in_", w);
+        for (int i = 0; i < 50; ++i) {
+          Packet p = MakePacket<int>(i).At(Timestamp(i));
+          MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(stream_name, p));
+          absl::SleepFor(absl::Microseconds(100));
+        }
+      });
+    }
   }
-  // Close the input stream "in".
-  MP_RETURN_IF_ERROR(graph.CloseInputStream("in"));
-  mediapipe::Packet packet;
-  // Get the output packets std::string.
-  while (poller.Next(&packet)) {
-    LOG(INFO) << packet.Get<int64>() << packet.Timestamp().Value();
+  MP_RETURN_IF_ERROR(graph.CloseAllInputStreams());
+  MP_RETURN_IF_ERROR(graph.WaitUntilDone());
+  for (int i = 0; i < NUM_STREAMS; ++i) {
+    // EXPECT_EQ(output_packets[i].size(), output_packets[0].size());
+    for (int j = 0; j < output_packets[i].size(); j++) {
+      LOG(INFO) << output_packets[i][j].Get<int>();
+      // EXPECT_EQ(output_packets[i][j].Get<int>(),
+      //           output_packets[0][j].Get<int>());
+    }
   }
-  return graph.WaitUntilDone();
-}
+    
+    return graph.WaitUntilDone();
+  }
 }  // namespace mediapipe
 
 int main(int argc, char** argv) {
