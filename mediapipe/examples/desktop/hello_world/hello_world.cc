@@ -20,6 +20,7 @@
 #include "mediapipe/framework/port/status.h"
 #include "mediapipe/framework/port/opencv_highgui_inc.h"
 
+
 namespace mediapipe {
 
 absl::Status PrintHelloWorld() {
@@ -55,7 +56,7 @@ absl::Status PrintHelloWorld() {
   mediapipe::Packet packet;
   // Get the output packets std::string.
   while (poller.Next(&packet)) {
-    LOG(INFO) << packet.Get<int64>();
+    LOG(INFO) << packet.Get<int64>() << packet.Timestamp().Value();
   }
   return graph.WaitUntilDone();
 }
