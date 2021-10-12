@@ -47,14 +47,14 @@ absl::Status PrintHelloWorld() {
   // Give 10 input packets that contains the same std::string "Hello World!".
   for (int i = 0; i < 10; ++i) {
     MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-        "in", MakePacket<std::string>("Hello World!").At(Timestamp(i))));
+        "in", MakePacket<int>(i).At(Timestamp(i))));
   }
   // Close the input stream "in".
   MP_RETURN_IF_ERROR(graph.CloseInputStream("in"));
   mediapipe::Packet packet;
   // Get the output packets std::string.
   while (poller.Next(&packet)) {
-    LOG(INFO) << packet.Get<std::string>();
+    LOG(INFO) << packet.Get<int>();
   }
   return graph.WaitUntilDone();
 }
