@@ -252,10 +252,12 @@ http_archive(
 # You may run setup_android.sh to install Android SDK and NDK.
 android_ndk_repository(
     name = "androidndk",
+    path = "/home/seamanj/Android/Sdk/ndk-bundle/android-ndk-r19c",
 )
 
 android_sdk_repository(
     name = "androidsdk",
+    path = "/home/seamanj/Android/Sdk",
 )
 
 # iOS basic build deps.
