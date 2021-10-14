@@ -4,6 +4,12 @@ type: "HandRendererSubgraph"
 
 # CPU image. (ImageFrame)
 input_stream: "IMAGE:input_image"
+
+
+# tj : cv tick
+input_stream: "TICK:tick"
+
+
 # Collection of detected/predicted hands, each represented as a list of
 # landmarks. (std::vector<NormalizedLandmarkList>)
 input_stream: "LANDMARKS:multi_hand_landmarks"
@@ -195,6 +201,17 @@ node {
   }
 }
 
+
+# Converts tick to drawing primitives for annotation overlay.
+node {
+  calculator: "TickToRenderDataCalculator"
+  input_stream: "TICK:tick"
+  output_stream: "RENDER_DATA:fps_render_data"
+}
+
+
+
+
 # Draws annotations and overlays them on top of the input images. Consumes
 # a vector of RenderData objects and draws each of them on the input frame.
 node {
@@ -205,5 +222,6 @@ node {
   input_stream: "multi_palm_rects_render_data"
   input_stream: "handedness_render_data"
   input_stream: "VECTOR:0:multi_hand_landmarks_render_data"
+  #input_stream: "fps_render_data"
   output_stream: "IMAGE:output_image"
 }

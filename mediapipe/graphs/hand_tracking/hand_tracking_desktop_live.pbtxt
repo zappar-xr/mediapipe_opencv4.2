@@ -24,7 +24,6 @@ node {
 node {
   calculator: "HandLandmarkTrackingCpu"
   input_stream: "IMAGE:input_video"
-  input_stream: "TICK:tick"
   input_side_packet: "NUM_HANDS:num_hands"
   output_stream: "LANDMARKS:landmarks"
   output_stream: "HANDEDNESS:handedness"
@@ -38,6 +37,7 @@ node {
 node {
   calculator: "HandRendererSubgraph"
   input_stream: "IMAGE:input_video"
+  input_stream: "TICK:tick"
   input_stream: "DETECTIONS:multi_palm_detections"
   input_stream: "LANDMARKS:landmarks"
   input_stream: "HANDEDNESS:handedness"

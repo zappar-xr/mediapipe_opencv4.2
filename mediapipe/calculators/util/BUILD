@@ -734,6 +734,26 @@ cc_library(
 )
 
 cc_library(
+    name = "tick_to_render_data_calculator",
+    srcs = ["tick_to_render_data_calculator.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//mediapipe/framework:calculator_framework",
+        "//mediapipe/framework:calculator_options_cc_proto",
+        "//mediapipe/framework/port:ret_check",
+        "//mediapipe/framework/port:status",
+        "//mediapipe/framework/port:statusor",
+        "//mediapipe/util:color_cc_proto",
+        "//mediapipe/util:render_data_cc_proto",
+        "@com_google_absl//absl/strings",
+         "//mediapipe/framework/port:opencv_highgui"
+    ],
+    alwayslink = 1,
+)
+
+
+
+cc_library(
     name = "rect_to_render_data_calculator",
     srcs = ["rect_to_render_data_calculator.cc"],
     visibility = ["//visibility:public"],
