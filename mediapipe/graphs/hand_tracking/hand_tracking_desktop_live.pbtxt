@@ -5,7 +5,7 @@
 
 # CPU image. (ImageFrame)
 input_stream: "input_video"
-
+input_stream: "tick"
 # CPU image. (ImageFrame)
 output_stream: "output_video"
 
@@ -24,6 +24,7 @@ node {
 node {
   calculator: "HandLandmarkTrackingCpu"
   input_stream: "IMAGE:input_video"
+  input_stream: "TICK:tick"
   input_side_packet: "NUM_HANDS:num_hands"
   output_stream: "LANDMARKS:landmarks"
   output_stream: "HANDEDNESS:handedness"

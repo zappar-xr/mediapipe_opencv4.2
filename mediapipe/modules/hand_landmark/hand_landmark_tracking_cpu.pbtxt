@@ -11,6 +11,9 @@ type: "HandLandmarkTrackingCpu"
 # CPU image. (ImageFrame)
 input_stream: "IMAGE:image"
 
+# tj : cv tick
+input_stream: "TICK:tick"
+
 # Max number of hands to detect/track. (int)
 input_side_packet: "NUM_HANDS:num_hands"
 
