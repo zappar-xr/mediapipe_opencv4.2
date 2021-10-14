@@ -29,9 +29,13 @@ constexpr char kFPSTag[] = "FPS";
 
 class FPSCalculator : public CalculatorBase {
  public:
+
+  // tj : note: have to set all inputs and outputs, otherwsie grash init will fail
   static absl::Status GetContract(CalculatorContract* cc) {
+    cc->Inputs().Index(0).Set<int>();
     cc->Inputs().Tag(kTickTag).Set<int64>();
-    cc->Inputs().Tag(kFPSTag).Set<double>();
+    cc->Outputs().Index(0).Set<int>();
+    cc->Outputs().Tag(kFPSTag).Set<int64>();
     return absl::OkStatus();
   }
 
@@ -61,114 +65,14 @@ class FPSCalculator : public CalculatorBase {
 const auto& tick_start =
         cc->Inputs().Tag(kTickTag).Get<int64>();
 
-auto output_double = absl::make_unique<double>((double)1 / (cv::getTickCount() - tick_start));
+auto output_fps = absl::make_unique<int64>(cv::getTickFrequency() / (cv::getTickCount() - tick_start));
 
-  cc->Outputs()
-      .Tag(kFPSTag)
-      .Add(output_double.release(),  cc->InputTimestamp());
-
-  
+  auto output_int = absl::make_unique<int>(cc->Inputs().Index(0).Get<int>());
+  cc->Outputs().Index(0).Add(output_int.release(), cc->InputTimestamp());
+  cc->Outputs().Tag(kFPSTag).Add(output_fps.release(),  cc->InputTimestamp());
     return absl::OkStatus();
   }
 };
-class FixedPassThroughCalculator : public CalculatorBase
-  {
-  public:
-    static absl::Status GetContract(CalculatorContract *cc)
-    {
-      if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap()))
-      {
-        return absl::InvalidArgumentError(
-            "Input and output streams to PassThroughCalculator must use "
-            "matching tags and indexes.");
-      }
-      for (CollectionItemId id = cc->Inputs().BeginId();
-           id < cc->Inputs().EndId(); ++id)
-      {
-        cc->Inputs().Get(id).SetAny();
-        cc->Outputs().Get(id).SetSameAs(&cc->Inputs().Get(id));
-      }
-      for (CollectionItemId id = cc->InputSidePackets().BeginId();
-           id < cc->InputSidePackets().EndId(); ++id)
-      {
-        cc->InputSidePackets().Get(id).SetAny();
-      }
-      if (cc->OutputSidePackets().NumEntries() != 0)
-      {
-        if (!cc->InputSidePackets().TagMap()->SameAs(
-                *cc->OutputSidePackets().TagMap()))
-        {
-          return absl::InvalidArgumentError(
-              "Input and output side packets to PassThroughCalculator must use "
-              "matching tags and indexes.");
-        }
-        for (CollectionItemId id = cc->InputSidePackets().BeginId();
-             id < cc->InputSidePackets().EndId(); ++id)
-        {
-          cc->OutputSidePackets().Get(id).SetSameAs(
-              &cc->InputSidePackets().Get(id));
-        }
-      }
-
-      // Assign this calculator's InputStreamHandler and options.
-      // cc->SetInputStreamHandler("FixedSizeInputStreamHandler");
-      // MediaPipeOptions options;
-      // options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
-      //     ->set_fixed_min_size(2);
-      // options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
-      //     ->set_trigger_queue_size(2);
-      // options.MutableExtension(FixedSizeInputStreamHandlerOptions::ext)
-      //     ->set_target_queue_size(2);
-      // cc->SetInputStreamHandlerOptions(options);
-
-      return absl::OkStatus();
-    }
-
-    absl::Status Open(CalculatorContext *cc) final
-    {
-      for (CollectionItemId id = cc->Inputs().BeginId();
-           id < cc->Inputs().EndId(); ++id)
-      {
-        if (!cc->Inputs().Get(id).Header().IsEmpty())
-        {
-          cc->Outputs().Get(id).SetHeader(cc->Inputs().Get(id).Header());
-        }
-      }
-      if (cc->OutputSidePackets().NumEntries() != 0)
-      {
-        for (CollectionItemId id = cc->InputSidePackets().BeginId();
-             id < cc->InputSidePackets().EndId(); ++id)
-        {
-          cc->OutputSidePackets().Get(id).Set(cc->InputSidePackets().Get(id));
-        }
-      }
-      cc->SetOffset(TimestampDiff(0));
-      return absl::OkStatus();
-    }
-
-    absl::Status Process(CalculatorContext *cc) final
-    {
-      cc->GetCounter("PassThrough")->Increment();
-      if (cc->Inputs().NumEntries() == 0)
-      {
-        return tool::StatusStop();
-      }
-      for (CollectionItemId id = cc->Inputs().BeginId();
-           id < cc->Inputs().EndId(); ++id)
-      {
-        if (!cc->Inputs().Get(id).IsEmpty())
-        {
-          VLOG(3) << "Passing " << cc->Inputs().Get(id).Name() << " to "
-                  << cc->Outputs().Get(id).Name() << " at "
-                  << cc->InputTimestamp().DebugString();
-          cc->Outputs().Get(id).AddPacket(cc->Inputs().Get(id).Value());
-        }
-      }
-      return absl::OkStatus();
-    }
-  };
-      REGISTER_CALCULATOR(FixedPassThroughCalculator);
-
 REGISTER_CALCULATOR(FPSCalculator);
 
 absl::Status PrintHelloWorld() {
@@ -185,11 +89,11 @@ absl::Status PrintHelloWorld() {
           output_stream: "out1"
         }
         node {
-          calculator: "FixedPassThroughCalculator"
+          calculator: "FPSCalculator"
           input_stream: "out1"
           input_stream: "TICK:tick"
           output_stream: "out"
-          output_stream: "TICK:fps"
+          output_stream: "FPS:fps"
         }
       )pb");
 
