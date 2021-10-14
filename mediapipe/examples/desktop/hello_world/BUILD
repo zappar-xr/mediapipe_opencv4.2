@@ -21,6 +21,8 @@ cc_binary(
     srcs = ["hello_world.cc"],
     visibility = ["//visibility:public"],
     deps = [
+        "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler_cc_proto",
+        "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler",
         "//mediapipe/calculators/core:pass_through_calculator",
         "//mediapipe/framework:calculator_graph",
         "//mediapipe/framework/port:logging",
@@ -28,7 +30,6 @@ cc_binary(
         "//mediapipe/framework/port:status",
         "//mediapipe/framework/port:opencv_highgui",
         "//mediapipe/framework:calculator_framework",
-        "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler",
-        "//mediapipe/framework/stream_handler:fixed_size_input_stream_handler_cc_proto",
+
     ],
 )
