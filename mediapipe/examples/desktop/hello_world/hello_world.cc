@@ -184,8 +184,7 @@ namespace mediapipe
                       // });
       }
     // }
-    LOG(INFO) << "hello world";
-    std::cout << "hhhh" << std::endl;
+
     MP_RETURN_IF_ERROR(graph.CloseAllInputStreams());
     // MP_RETURN_IF_ERROR(graph.WaitUntilDone());
     for (int i = 0; i < NUM_STREAMS; ++i)
@@ -193,7 +192,7 @@ namespace mediapipe
       // EXPECT_EQ(output_packets[i].size(), output_packets[0].size());
       for (int j = 0; j < output_packets[i].size(); j++)
       {
-        LOG(INFO) << output_packets[i][j].Get<int>() << 1;
+        LOG(INFO) << i << " " << j << " " << output_packets[i][j].Get<int>();
         // EXPECT_EQ(output_packets[i][j].Get<int>(),
         //           output_packets[0][j].Get<int>());
       }
