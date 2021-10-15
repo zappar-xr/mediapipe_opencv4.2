@@ -7,7 +7,7 @@ input_stream: "IMAGE:input_image"
 
 
 # tj : cv tick
-input_stream: "TICK:tick"
+#input_stream: "TICK:tick"
 
 
 # Collection of detected/predicted hands, each represented as a list of
@@ -27,6 +27,10 @@ input_stream: "DETECTIONS:palm_detections"
 
 # Updated CPU image. (ImageFrame)
 output_stream: "IMAGE:output_image"
+
+
+
+
 
 # Converts detections to drawing primitives for annotation overlay.
 node {
@@ -205,10 +209,10 @@ node {
 # Converts tick to drawing primitives for annotation overlay.
 node {
   calculator: "TickToRenderDataCalculator"
-  input_stream: "TICK:tick"
+  #input_stream: "TICK:tick"
+  input_stream: "IMAGE:input_image"
   output_stream: "RENDER_DATA:fps_render_data"
 }
-
 
 
 
@@ -217,11 +221,11 @@ node {
 node {
   calculator: "AnnotationOverlayCalculator"
   input_stream: "IMAGE:input_image"
-  input_stream: "detection_render_data"
-  input_stream: "multi_hand_rects_render_data"
-  input_stream: "multi_palm_rects_render_data"
-  input_stream: "handedness_render_data"
-  input_stream: "VECTOR:0:multi_hand_landmarks_render_data"
-  #input_stream: "fps_render_data"
+  input_stream: "fps_render_data"
+  #input_stream: "detection_render_data"
+  #input_stream: "multi_hand_rects_render_data"
+  #input_stream: "multi_palm_rects_render_data"
+  #input_stream: "handedness_render_data"
+  #input_stream: "VECTOR:0:multi_hand_landmarks_render_data"
   output_stream: "IMAGE:output_image"
 }

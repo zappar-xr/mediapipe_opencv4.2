@@ -28,6 +28,7 @@
 #include "mediapipe/framework/port/status.h"
 
 constexpr char kInputStream[] = "input_video";
+constexpr char kInputTick[] = "tick";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
 
@@ -118,7 +119,7 @@ absl::Status RunMPPGraph() {
                           .At(mediapipe::Timestamp(frame_timestamp_us))));
 
     MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-        "tick", MakePacket<int64>(cv::getTickCount())
+        kInputTick, MakePacket<int64>(cv::getTickCount())
         .At(mediapipe::Timestamp(frame_timestamp_us))));
 
     // Get the graph result packet, or stop if that fails.
@@ -142,6 +143,7 @@ absl::Status RunMPPGraph() {
   LOG(INFO) << "Shutting down.";
   if (writer.isOpened()) writer.release();
   MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputStream));
+  MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputTick));
   return graph.WaitUntilDone();
 }
 

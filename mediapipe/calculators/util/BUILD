@@ -746,7 +746,10 @@ cc_library(
         "//mediapipe/util:color_cc_proto",
         "//mediapipe/util:render_data_cc_proto",
         "@com_google_absl//absl/strings",
-         "//mediapipe/framework/port:opencv_highgui"
+         "//mediapipe/framework/port:opencv_highgui",
+        "//mediapipe/framework/formats:image_format_cc_proto",
+        "//mediapipe/framework/formats:image_frame",
+        "//mediapipe/framework/formats:image_frame_opencv",
     ],
     alwayslink = 1,
 )
