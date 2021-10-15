@@ -96,10 +96,10 @@ namespace mediapipe
     std::string display_text = std::to_string(output_fps);
     // std::string display_text = std::to_string(30);
     text->set_display_text(display_text);
-    text->set_font_height(50);
-    text->set_left(50);
+    text->set_font_height(40);
+    text->set_left(50+420);
     text->set_baseline(50+20);
-    text->set_font_face(1);
+    text->set_font_face(2);
 
     cc->Outputs()
         .Tag(kRenderDataTag)
