@@ -5,7 +5,7 @@
 
 # CPU image. (ImageFrame)
 input_stream: "input_video"
-#input_stream: "tick"
+input_stream: "input_tick"
 # CPU image. (ImageFrame)
 output_stream: "output_video"
 
@@ -37,7 +37,7 @@ node {
 node {
   calculator: "HandRendererSubgraph"
   input_stream: "IMAGE:input_video"
-  #input_stream: "TICK:tick"
+  input_stream: "CVTICK:input_tick"
   input_stream: "DETECTIONS:multi_palm_detections"
   input_stream: "LANDMARKS:landmarks"
   input_stream: "HANDEDNESS:handedness"

@@ -32,6 +32,7 @@
 void printFPS();
 
 constexpr char kInputStream[] = "input_video";
+constexpr char kInputTick[] = "input_tick";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
 
@@ -120,6 +121,10 @@ absl::Status RunMPPGraph() {
     MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
         kInputStream, mediapipe::Adopt(input_frame.release())
                           .At(mediapipe::Timestamp(frame_timestamp_us))));
+
+    MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+        kInputTick, mediapipe::MakePacket<int64>(cv::getTickCount())
+        .At(mediapipe::Timestamp(frame_timestamp_us))));
 
     // Get the graph result packet, or stop if that fails.
     mediapipe::Packet packet;

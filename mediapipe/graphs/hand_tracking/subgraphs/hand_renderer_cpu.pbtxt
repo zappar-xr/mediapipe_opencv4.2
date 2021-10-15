@@ -7,7 +7,7 @@ input_stream: "IMAGE:input_image"
 
 
 # tj : cv tick
-#input_stream: "TICK:tick"
+input_stream: "CVTICK:input_tick"
 
 
 # Collection of detected/predicted hands, each represented as a list of
@@ -209,8 +209,8 @@ node {
 # Converts tick to drawing primitives for annotation overlay.
 node {
   calculator: "TickToRenderDataCalculator"
-  #input_stream: "TICK:tick"
-  input_stream: "IMAGE:input_image"
+  input_stream: "CVTICK:input_tick"
+  #input_stream: "IMAGE:input_image"
   output_stream: "RENDER_DATA:fps_render_data"
 }
 
@@ -222,10 +222,10 @@ node {
   calculator: "AnnotationOverlayCalculator"
   input_stream: "IMAGE:input_image"
   input_stream: "fps_render_data"
-  #input_stream: "detection_render_data"
-  #input_stream: "multi_hand_rects_render_data"
-  #input_stream: "multi_palm_rects_render_data"
-  #input_stream: "handedness_render_data"
-  #input_stream: "VECTOR:0:multi_hand_landmarks_render_data"
+  input_stream: "detection_render_data"
+  input_stream: "multi_hand_rects_render_data"
+  input_stream: "multi_palm_rects_render_data"
+  input_stream: "handedness_render_data"
+  input_stream: "VECTOR:0:multi_hand_landmarks_render_data"
   output_stream: "IMAGE:output_image"
 }

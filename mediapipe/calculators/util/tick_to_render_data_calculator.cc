@@ -33,7 +33,7 @@ namespace mediapipe
 {
 
   constexpr char kRenderDataTag[] = "RENDER_DATA";
-  constexpr char kTickTag[] = "TICK";
+  constexpr char kTickTag[] = "CVTICK";
   constexpr char kImageFrameTag[] = "IMAGE";
   constexpr float kFontHeightScale = 1.25f;
 
@@ -67,8 +67,8 @@ namespace mediapipe
   absl::Status TickToRenderDataCalculator::GetContract(CalculatorContract *cc)
   {
 
-    // cc->Inputs().Tag(kTickTag).Set<int64>();
-    cc->Inputs().Tag(kImageFrameTag).Set<ImageFrame>();
+    cc->Inputs().Tag(kTickTag).Set<int64>();
+    // cc->Inputs().Tag(kImageFrameTag).Set<ImageFrame>();
     cc->Outputs().Tag(kRenderDataTag).Set<RenderData>();
 
     return absl::OkStatus();
@@ -83,21 +83,21 @@ namespace mediapipe
   absl::Status TickToRenderDataCalculator::Process(CalculatorContext *cc)
   {
     
-    // const auto& tick_start = cc->Inputs().Tag(kImageFrameTag).Get<float>();
-    // auto output_fps = cv::getTickFrequency() / (cv::getTickCount() - tick_start);
+    const auto& tick_start = cc->Inputs().Tag(kTickTag).Get<int64>();
+    int output_fps = cv::getTickFrequency() / (cv::getTickCount() - tick_start);
 
     RenderData render_data;
     auto *label_annotation = render_data.add_render_annotations();
-    label_annotation->set_thickness(10.0);
+    label_annotation->set_thickness(5.0);
     label_annotation->mutable_color()->set_r(0);
     label_annotation->mutable_color()->set_g(255);
     label_annotation->mutable_color()->set_b(0);
     auto *text = label_annotation->mutable_text();
-    // std::string display_text = std::to_string(output_fps);
-    std::string display_text = std::to_string(30);
+    std::string display_text = std::to_string(output_fps);
+    // std::string display_text = std::to_string(30);
     text->set_display_text(display_text);
     text->set_font_height(50);
-    text->set_left(50+450);
+    text->set_left(50);
     text->set_baseline(50+20);
     text->set_font_face(1);
 
