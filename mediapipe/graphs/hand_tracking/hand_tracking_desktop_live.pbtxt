@@ -5,6 +5,7 @@
 
 # CPU image. (ImageFrame)
 input_stream: "input_video"
+# tj : input opencv tick for fps calculation
 input_stream: "input_tick"
 # CPU image. (ImageFrame)
 output_stream: "output_video"

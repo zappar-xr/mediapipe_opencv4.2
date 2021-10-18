@@ -32,6 +32,7 @@
 #include "mediapipe/gpu/gpu_shared_data_internal.h"
 
 constexpr char kInputStream[] = "input_video";
+constexpr char kInputTick[] = "input_tick";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
 
@@ -133,6 +134,10 @@ absl::Status RunMPPGraph() {
           MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
               kInputStream, mediapipe::Adopt(gpu_frame.release())
                                 .At(mediapipe::Timestamp(frame_timestamp_us))));
+          // tj : add opencv tick package
+           MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+            kInputTick, mediapipe::MakePacket<int64>(cv::getTickCount())
+            .At(mediapipe::Timestamp(frame_timestamp_us))));
           return absl::OkStatus();
         }));
 

@@ -64,6 +64,7 @@ cc_library(
         "//mediapipe/calculators/core:flow_limiter_calculator",
         "//mediapipe/graphs/hand_tracking/subgraphs:hand_renderer_gpu",
         "//mediapipe/modules/hand_landmark:hand_landmark_tracking_gpu",
+        "//mediapipe/calculators/core:pass_through_calculator",
     ],
 )
 

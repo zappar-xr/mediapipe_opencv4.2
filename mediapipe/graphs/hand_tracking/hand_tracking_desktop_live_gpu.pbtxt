@@ -4,7 +4,8 @@
 
 # GPU image. (GpuBuffer)
 input_stream: "input_video"
-
+# tj : input opencv tick for fps calculation
+input_stream: "input_tick"
 # GPU image. (GpuBuffer)
 output_stream: "output_video"
 # Collection of detected/predicted hands, each represented as a list of
@@ -34,15 +35,36 @@ node {
   output_stream: "HAND_ROIS_FROM_PALM_DETECTIONS:hand_rects_from_palm_detections"
 }
 
-# Subgraph that renders annotations and overlays them on top of the input
-# images (see hand_renderer_gpu.pbtxt).
+
+# tj : passthrough for sync
 node {
-  calculator: "HandRendererSubgraph"
-  input_stream: "IMAGE:input_video"
+  calculator: "PassThroughCalculator"
+  input_stream: "CVTICK:input_tick"
   input_stream: "DETECTIONS:palm_detections"
   input_stream: "LANDMARKS:hand_landmarks"
   input_stream: "HANDEDNESS:handedness"
   input_stream: "NORM_RECTS:0:hand_rects_from_palm_detections"
   input_stream: "NORM_RECTS:1:hand_rects_from_landmarks"
+  output_stream: "CVTICK:input_tick1"
+  output_stream: "DETECTIONS:palm_detections1"
+  output_stream: "LANDMARKS:hand_landmarks1"
+  output_stream: "HANDEDNESS:handedness1"
+  output_stream: "NORM_RECTS:0:hand_rects_from_palm_detections1"
+  output_stream: "NORM_RECTS:1:hand_rects_from_landmarks1"
+
+}
+
+
+# Subgraph that renders annotations and overlays them on top of the input
+# images (see hand_renderer_gpu.pbtxt).
+node {
+  calculator: "HandRendererSubgraph"
+  input_stream: "IMAGE:input_video"
+  input_stream: "CVTICK:input_tick1"
+  input_stream: "DETECTIONS:palm_detections1"
+  input_stream: "LANDMARKS:hand_landmarks1"
+  input_stream: "HANDEDNESS:handedness1"
+  input_stream: "NORM_RECTS:0:hand_rects_from_palm_detections1"
+  input_stream: "NORM_RECTS:1:hand_rects_from_landmarks1"
   output_stream: "IMAGE:output_video"
 }

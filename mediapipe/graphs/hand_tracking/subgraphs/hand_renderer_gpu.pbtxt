@@ -4,20 +4,24 @@ type: "HandRendererSubgraph"
 
 # GPU buffer. (GpuBuffer)
 input_stream: "IMAGE:input_image"
+
+# tj : cv tick
+input_stream: "CVTICK:input_tick1"
+
 # Collection of detected/predicted hands, each represented as a list of
 # landmarks. (std::vector<NormalizedLandmarkList>)
-input_stream: "LANDMARKS:multi_hand_landmarks"
+input_stream: "LANDMARKS:multi_hand_landmarks1"
 # Handedness of the detected hand (i.e. is hand left or right).
 # (std::vector<ClassificationList>)
-input_stream: "HANDEDNESS:multi_handedness"
+input_stream: "HANDEDNESS:multi_handedness1"
 # Regions of interest calculated based on palm detections.
 # (std::vector<NormalizedRect>)
-input_stream: "NORM_RECTS:0:multi_palm_rects"
+input_stream: "NORM_RECTS:0:multi_palm_rects1"
 # Regions of interest calculated based on landmarks.
 # (std::vector<NormalizedRect>)
-input_stream: "NORM_RECTS:1:multi_hand_rects"
+input_stream: "NORM_RECTS:1:multi_hand_rects1"
 # Detected palms. (std::vector<Detection>)
-input_stream: "DETECTIONS:palm_detections"
+input_stream: "DETECTIONS:palm_detections1"
 
 # Updated GPU buffer. (GpuBuffer)
 output_stream: "IMAGE:output_image"
@@ -25,7 +29,7 @@ output_stream: "IMAGE:output_image"
 # Converts detections to drawing primitives for annotation overlay.
 node {
   calculator: "DetectionsToRenderDataCalculator"
-  input_stream: "DETECTIONS:palm_detections"
+  input_stream: "DETECTIONS:palm_detections1"
   output_stream: "RENDER_DATA:detection_render_data"
   node_options: {
     [type.googleapis.com/mediapipe.DetectionsToRenderDataCalculatorOptions] {
@@ -38,7 +42,7 @@ node {
 # Converts normalized rects to drawing primitives for annotation overlay.
 node {
   calculator: "RectToRenderDataCalculator"
-  input_stream: "NORM_RECTS:multi_hand_rects"
+  input_stream: "NORM_RECTS:multi_hand_rects1"
   output_stream: "RENDER_DATA:multi_hand_rects_render_data"
   node_options: {
     [type.googleapis.com/mediapipe.RectToRenderDataCalculatorOptions] {
@@ -52,7 +56,7 @@ node {
 # Converts normalized rects to drawing primitives for annotation overlay.
 node {
   calculator: "RectToRenderDataCalculator"
-  input_stream: "NORM_RECTS:multi_palm_rects"
+  input_stream: "NORM_RECTS:multi_palm_rects1"
   output_stream: "RENDER_DATA:multi_palm_rects_render_data"
   node_options: {
     [type.googleapis.com/mediapipe.RectToRenderDataCalculatorOptions] {
@@ -69,7 +73,7 @@ node {
 # vector have been processed.
 node {
   calculator: "BeginLoopNormalizedLandmarkListVectorCalculator"
-  input_stream: "ITERABLE:multi_hand_landmarks"
+  input_stream: "ITERABLE:multi_hand_landmarks1"
   output_stream: "ITEM:single_hand_landmarks"
   output_stream: "BATCH_END:landmark_timestamp"
 }
@@ -143,7 +147,7 @@ node {
 # Don't render handedness if there are more than one handedness reported.
 node {
   calculator: "ClassificationListVectorHasMinSizeCalculator"
-  input_stream: "ITERABLE:multi_handedness"
+  input_stream: "ITERABLE:multi_handedness1"
   output_stream: "disallow_handedness_rendering"
   node_options: {
     [type.googleapis.com/mediapipe.CollectionHasMinSizeCalculatorOptions] {
@@ -154,7 +158,7 @@ node {
 
 node {
   calculator: "GateCalculator"
-  input_stream: "multi_handedness"
+  input_stream: "multi_handedness1"
   input_stream: "DISALLOW:disallow_handedness_rendering"
   output_stream: "allowed_multi_handedness"
   node_options: {
@@ -195,11 +199,22 @@ node {
   }
 }
 
+
+# tj : Converts tick to drawing primitives for annotation overlay.
+node {
+  calculator: "TickToRenderDataCalculator"
+  input_stream: "CVTICK:input_tick1"
+  #input_stream: "IMAGE:input_image"
+  output_stream: "RENDER_DATA:fps_render_data"
+}
+
+
 # Draws annotations and overlays them on top of the input images. Consumes
 # a vector of RenderData objects and draws each of them on the input frame.
 node {
   calculator: "AnnotationOverlayCalculator"
   input_stream: "IMAGE_GPU:input_image"
+  input_stream: "fps_render_data"
   input_stream: "detection_render_data"
   input_stream: "multi_hand_rects_render_data"
   input_stream: "multi_palm_rects_render_data"
