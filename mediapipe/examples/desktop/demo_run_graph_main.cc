@@ -32,7 +32,6 @@
 void printFPS();
 
 constexpr char kInputStream[] = "input_video";
-constexpr char kInputTick[] = "input_tick";
 constexpr char kOutputStream[] = "output_video";
 constexpr char kWindowName[] = "MediaPipe";
 
@@ -84,7 +83,15 @@ absl::Status RunMPPGraph() {
   LOG(INFO) << "Start running the calculator graph.";
   ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
                    graph.AddOutputStreamPoller(kOutputStream));
-  MP_RETURN_IF_ERROR(graph.StartRun({}));
+
+  std::map<std::string, mediapipe::Packet> side_packets = {
+      {"freq", mediapipe::MakePacket<int64>(cv::getTickFrequency())},
+  };
+
+  MP_RETURN_IF_ERROR(graph.StartRun({side_packets}));
+
+
+
 
   LOG(INFO) << "Start grabbing and processing frames.";
   bool grab_frames = true;
@@ -122,9 +129,9 @@ absl::Status RunMPPGraph() {
         kInputStream, mediapipe::Adopt(input_frame.release())
                           .At(mediapipe::Timestamp(frame_timestamp_us))));
 
-    MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-        kInputTick, mediapipe::MakePacket<int64>(cv::getTickCount())
-        .At(mediapipe::Timestamp(frame_timestamp_us))));
+    // MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+    //     kInputTick, mediapipe::MakePacket<int64>(cv::getTickCount())
+    //     .At(mediapipe::Timestamp(frame_timestamp_us))));
 
     // Get the graph result packet, or stop if that fails.
     mediapipe::Packet packet;

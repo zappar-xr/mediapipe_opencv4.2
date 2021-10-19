@@ -5,8 +5,9 @@
 
 # CPU image. (ImageFrame)
 input_stream: "input_video"
-# tj : input opencv tick for fps calculation
-input_stream: "input_tick"
+
+input_side_packet: "freq"
+
 # CPU image. (ImageFrame)
 output_stream: "output_video"
 
@@ -33,22 +34,24 @@ node {
   output_stream: "HAND_ROIS_FROM_PALM_DETECTIONS:multi_palm_rects"
 }
 
-# tj : passthrough for sync
+# tj : tick start
 node {
-  calculator: "PassThroughCalculator"
-  input_stream: "CVTICK:input_tick"
-  input_stream: "DETECTIONS:multi_palm_detections"
+  calculator: "TickCalculator"
+  input_stream: "IMAGE:input_video"
+  output_stream: "TICK:tick_start"
+}
+
+
+# tj : tick end
+node {
+  calculator: "TickCalculator"
+  input_stream: "IMAGE:input_video"
   input_stream: "LANDMARKS:landmarks"
   input_stream: "HANDEDNESS:handedness"
+  input_stream: "DETECTIONS:multi_palm_detections"
   input_stream: "NORM_RECTS:0:multi_palm_rects"
   input_stream: "NORM_RECTS:1:multi_hand_rects"
-  output_stream: "CVTICK:input_tick1"
-  output_stream: "DETECTIONS:multi_palm_detections1"
-  output_stream: "LANDMARKS:landmarks1"
-  output_stream: "HANDEDNESS:handedness1"
-  output_stream: "NORM_RECTS:0:multi_palm_rects1"
-  output_stream: "NORM_RECTS:1:multi_hand_rects1"
-
+  output_stream: "TICK:tick_end"
 }
 
 # Subgraph that renders annotations and overlays them on top of the input
@@ -56,11 +59,13 @@ node {
 node {
   calculator: "HandRendererSubgraph"
   input_stream: "IMAGE:input_video"
-  input_stream: "CVTICK:input_tick1"
-  input_stream: "DETECTIONS:multi_palm_detections1"
-  input_stream: "LANDMARKS:landmarks1"
-  input_stream: "HANDEDNESS:handedness1"
-  input_stream: "NORM_RECTS:0:multi_palm_rects1"
-  input_stream: "NORM_RECTS:1:multi_hand_rects1"
+  input_stream: "TICK:0:tick_start"
+  input_stream: "TICK:1:tick_end"
+  input_side_packet: "freq"
+  input_stream: "DETECTIONS:multi_palm_detections"
+  input_stream: "LANDMARKS:landmarks"
+  input_stream: "HANDEDNESS:handedness"
+  input_stream: "NORM_RECTS:0:multi_palm_rects"
+  input_stream: "NORM_RECTS:1:multi_hand_rects"
   output_stream: "IMAGE:output_video"
 }

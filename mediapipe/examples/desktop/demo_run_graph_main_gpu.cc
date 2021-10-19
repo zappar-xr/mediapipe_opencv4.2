@@ -191,6 +191,7 @@ absl::Status RunMPPGraph() {
   LOG(INFO) << "Shutting down.";
   if (writer.isOpened()) writer.release();
   MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputStream));
+  MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputTick));
   return graph.WaitUntilDone();
 }
 

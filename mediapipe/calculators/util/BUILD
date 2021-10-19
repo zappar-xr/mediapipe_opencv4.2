@@ -757,6 +757,21 @@ cc_library(
 
 
 cc_library(
+    name = "tick_calculator",
+    srcs = ["tick_calculator.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//mediapipe/framework:calculator_framework",
+        "//mediapipe/framework:calculator_options_cc_proto",
+        "@com_google_absl//absl/strings",
+         "//mediapipe/framework/port:opencv_highgui",
+    ],
+    alwayslink = 1,
+)
+
+
+
+cc_library(
     name = "rect_to_render_data_calculator",
     srcs = ["rect_to_render_data_calculator.cc"],
     visibility = ["//visibility:public"],

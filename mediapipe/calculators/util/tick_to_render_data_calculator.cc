@@ -33,7 +33,7 @@ namespace mediapipe
 {
 
   constexpr char kRenderDataTag[] = "RENDER_DATA";
-  constexpr char kTickTag[] = "CVTICK";
+  constexpr char kTickTag[] = "TICK";
   constexpr char kImageFrameTag[] = "IMAGE";
   constexpr float kFontHeightScale = 1.25f;
 
@@ -42,11 +42,13 @@ namespace mediapipe
   // must be present.
   //
   // Usage example:
-  // node {
-  //   calculator: "TickToRenderDataCalculator"
-  //   input_stream: "TICK:tick"
-  //   output_stream: "RENDER_DATA:fps_render_data"
-  //   }
+// node {
+//   calculator: "TickToRenderDataCalculator"
+//   input_stream: "TICK:0:tick_start"
+//   input_stream: "TICK:1:tick_end"
+//   input_side_packet: "freq"
+//   output_stream: "RENDER_DATA:fps_render_data"
+// }
   // }
   class TickToRenderDataCalculator : public CalculatorBase
   {
@@ -61,14 +63,16 @@ namespace mediapipe
     int video_height_ = 0;
     int label_height_px_ = 0;
     int label_left_px_ = 0;
+    int64 freq = 0;
   };
   REGISTER_CALCULATOR(TickToRenderDataCalculator);
 
   absl::Status TickToRenderDataCalculator::GetContract(CalculatorContract *cc)
   {
 
-    cc->Inputs().Tag(kTickTag).Set<int64>();
-    // cc->Inputs().Tag(kImageFrameTag).Set<ImageFrame>();
+    cc->Inputs().Get(kTickTag, 0).Set<int64>();
+    cc->Inputs().Get(kTickTag, 1).Set<int64>();
+    cc->InputSidePackets().Index(0).Set<int64>();
     cc->Outputs().Tag(kRenderDataTag).Set<RenderData>();
 
     return absl::OkStatus();
@@ -77,14 +81,22 @@ namespace mediapipe
   absl::Status TickToRenderDataCalculator::Open(CalculatorContext *cc)
   {
     cc->SetOffset(TimestampDiff(0));
+    freq = cc->InputSidePackets().Index(0).Get<int64>();
     return absl::OkStatus();
   }
 
   absl::Status TickToRenderDataCalculator::Process(CalculatorContext *cc)
   {
-    
-    const auto& tick_start = cc->Inputs().Tag(kTickTag).Get<int64>();
-    int output_fps = cv::getTickFrequency() / (cv::getTickCount() - tick_start);
+
+
+const auto& tick_start = cc->Inputs().Get(kTickTag, 0).Get<int64>();
+const auto& tick_end = cc->Inputs().Get(kTickTag, 1).Get<int64>();
+const auto& tick_curr = cv::getTickCount();
+
+// std::cout << tick_start << " " << tick_end << " " << tick_curr << std::endl;
+
+int output_fps = freq / (tick_end - tick_start);
+
 
     RenderData render_data;
     auto *label_annotation = render_data.add_render_annotations();
@@ -107,4 +119,5 @@ namespace mediapipe
 
     return absl::OkStatus();
   }
+
 } // namespace mediapipe

@@ -30,6 +30,6 @@ cc_binary(
         "//mediapipe/framework/port:status",
         "//mediapipe/framework/port:opencv_highgui",
         "//mediapipe/framework:calculator_framework",
-
+        "//mediapipe/calculators/util:tick_calculator",
     ],
 )
