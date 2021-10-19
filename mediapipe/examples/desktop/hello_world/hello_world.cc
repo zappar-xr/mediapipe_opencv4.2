@@ -27,32 +27,56 @@ constexpr char kTickTag[] = "TICK";
 constexpr char kFPSTag[] = "FPS";
 
 
-// class ProcessCalculator : public CalculatorBase {
-//  public:
+class TickCalculator : public CalculatorBase {
+ public:
 
-//   // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
-//   // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
-//   static absl::Status GetContract(CalculatorContract* cc) {
-//     cc->Inputs().Tag(kTickTag).Set<int64>();
-//     cc->Outputs().Tag(kTickTag).Set<int64>();
-//     return absl::OkStatus();
-//   }
+  // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
+  // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
+  static absl::Status GetContract(CalculatorContract* cc) {
+    cc->Inputs().Index(0).SetAny();
+    cc->Outputs().Tag(kTickTag).Set<int64>();
+    return absl::OkStatus();
+  }
 
-//   absl::Status Open(CalculatorContext* cc) final {
-//     cc->SetOffset(TimestampDiff(0));
-//     return absl::OkStatus();
-//   }
+  absl::Status Open(CalculatorContext* cc) final {
+    cc->SetOffset(TimestampDiff(0));
+    return absl::OkStatus();
+  }
 
-//   absl::Status Process(CalculatorContext* cc) final {
-//     for (CollectionItemId id = cc->Inputs().BeginId(); id < cc->Inputs().EndId(); ++id) {
-//       if (!cc->Inputs().Get(id).IsEmpty()) {
-//         cc->Outputs().Get(id).AddPacket(cc->Inputs().Get(id).Value());
-//       }
-//     }
-//     return absl::OkStatus();
-//   }
-// };
-// REGISTER_CALCULATOR(ProcessCalculator);
+  absl::Status Process(CalculatorContext* cc) final {
+    auto tick = absl::make_unique<int64>(cv::getTickCount() );
+    cc->Outputs().Tag(kTickTag).Add(tick.release(), cc->InputTimestamp());
+    return absl::OkStatus();
+  }
+};
+REGISTER_CALCULATOR(TickCalculator);
+
+
+class ProcessCalculator : public CalculatorBase {
+ public:
+
+  // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
+  // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
+  static absl::Status GetContract(CalculatorContract* cc) {
+    cc->Inputs().Index(0).SetAny();
+    cc->Outputs().Tag(kTickTag).Set<int64>();
+    return absl::OkStatus();
+  }
+
+  absl::Status Open(CalculatorContext* cc) final {
+    cc->SetOffset(TimestampDiff(0));
+    return absl::OkStatus();
+  }
+
+  absl::Status Process(CalculatorContext* cc) final {
+    absl::SleepFor(absl::Milliseconds(5));
+    auto tick = absl::make_unique<int64>(cv::getTickCount() );
+    
+    cc->Outputs().Tag(kTickTag).Add(tick.release(), cc->InputTimestamp());
+    return absl::OkStatus();
+  }
+};
+REGISTER_CALCULATOR(ProcessCalculator);
 
 class FPSCalculator : public CalculatorBase {
  public:
@@ -97,7 +121,7 @@ const auto& tick_curr = cv::getTickCount();
 
 std::cout << tick_start << " " << tick_end << " " << tick_curr << std::endl;
 
-auto output_fps = absl::make_unique<int64>(cv::getTickFrequency() / (cv::getTickCount() - tick_start));
+auto output_fps = absl::make_unique<int64>(cv::getTickFrequency() / (tick_end - tick_start));
 
   cc->Outputs().Tag(kFPSTag).Add(output_fps.release(),  cc->InputTimestamp());
     return absl::OkStatus();
@@ -109,19 +133,26 @@ absl::Status PrintHelloWorld() {
   // Configures a simple graph, which concatenates 2 PassThroughCalculators.
   CalculatorGraphConfig config =
       ParseTextProtoOrDie<CalculatorGraphConfig>(R"pb(
-        input_stream: "tick"
+        input_stream: "in"
+        # output_stream: "out"
         output_stream: "fps"
 
         node {
-          calculator: "PassThroughCalculator"
-          input_stream: "tick"
-          output_stream: "tick1"
+          calculator: "TickCalculator"
+          input_stream: "in"
+          output_stream: "TICK:tick_start"
+        }
+
+        node {
+          calculator: "ProcessCalculator"
+          input_stream: "in"
+          output_stream: "TICK:tick_end"
         }
 
         node {
           calculator: "FPSCalculator"
-          input_stream: "TICK:0:tick"
-          input_stream: "TICK:1:tick1"
+          input_stream: "TICK:0:tick_start"
+          input_stream: "TICK:1:tick_end"
           output_stream: "FPS:fps"
         }
       )pb");
@@ -131,17 +162,18 @@ absl::Status PrintHelloWorld() {
 
   ASSIGN_OR_RETURN(OutputStreamPoller poller_fps,
                    graph.AddOutputStreamPoller("fps"));
+
   MP_RETURN_IF_ERROR(graph.StartRun({}));
   // Give 10 input packets that contains the same std::string "Hello World!".
   for (int i = 0; i < 2; ++i) {
-    // MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-    //     "in", MakePacket<int>(i).At(Timestamp(i))));
     MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
-    "tick", MakePacket<int64>(cv::getTickCount()).At(Timestamp(i))));
+        "in", MakePacket<int>(i).At(Timestamp(i))));
+    // MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
+    // "tick", MakePacket<int64>(cv::getTickCount()).At(Timestamp(i))));
   }
   // Close the input stream "in".
 
-  MP_RETURN_IF_ERROR(graph.CloseInputStream("tick"));
+  MP_RETURN_IF_ERROR(graph.CloseInputStream("in"));
   mediapipe::Packet packet2;
   // Get the output packets std::string.
   while (poller_fps.Next(&packet2)) {
