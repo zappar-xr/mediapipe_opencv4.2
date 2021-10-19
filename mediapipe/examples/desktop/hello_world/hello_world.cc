@@ -30,12 +30,17 @@ constexpr char kFPSTag[] = "FPS";
 class FPSCalculator : public CalculatorBase {
  public:
 
-  // tj : note: have to set all inputs and outputs, otherwsie grash init will fail
+  // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
+  // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
   static absl::Status GetContract(CalculatorContract* cc) {
     cc->Inputs().Index(0).Set<int>();
-    cc->Inputs().Tag(kTickTag).Set<int64>();
+    // cc->Inputs().Tag(kTickTag).Set<int64>();
+    // cc->Inputs().Index(1).Set<int64>();
+    cc->Inputs().Get(kTickTag, 0).Set<int64>();
+    cc->Inputs().Get(kTickTag, 1).Set<int64>();
     cc->Outputs().Index(0).Set<int>();
     cc->Outputs().Tag(kFPSTag).Set<int64>();
+    // cc->Outputs().Index(1).Set<int64>();
     return absl::OkStatus();
   }
 
@@ -86,12 +91,15 @@ absl::Status PrintHelloWorld() {
         node {
           calculator: "PassThroughCalculator"
           input_stream: "in"
+          input_stream: "tick"
           output_stream: "out1"
+          output_stream: "tick1"
         }
         node {
           calculator: "FPSCalculator"
           input_stream: "out1"
-          input_stream: "TICK:tick"
+          input_stream: "TICK:0:tick"
+          input_stream: "TICK:1:tick1"
           output_stream: "out"
           output_stream: "FPS:fps"
         }
