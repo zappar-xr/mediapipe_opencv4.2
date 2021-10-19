@@ -49,7 +49,7 @@ public class MainActivity extends com.google.mediapipe.apps.basic.MainActivity {
     AndroidPacketCreator packetCreator = processor.getPacketCreator();
     Map<String, Packet> inputSidePackets = new HashMap<>();
     inputSidePackets.put(INPUT_NUM_HANDS_SIDE_PACKET_NAME, packetCreator.createInt32(NUM_HANDS));
-    inputSidePackets.put("freq", packetCreator.createInt64(1000000000));
+    // inputSidePackets.put("freq", packetCreator.createInt64(1000000000));
     processor.setInputSidePackets(inputSidePackets);
 
     // Add frame listener to PacketManagement system

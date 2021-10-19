@@ -5,7 +5,7 @@
 # GPU image. (GpuBuffer)
 input_stream: "input_video"
 
-input_side_packet: "freq"
+#input_side_packet: "freq"
 
 # Max number of hands to detect/process. (int)
 input_side_packet: "num_hands"
@@ -81,7 +81,7 @@ node {
   input_stream: "IMAGE:throttled_input_video"
   input_stream: "TICK:0:tick_start"
   input_stream: "TICK:1:tick_end"
-  input_side_packet: "freq"
+  #input_side_packet: "freq"
   input_stream: "DETECTIONS:palm_detections"
   input_stream: "LANDMARKS:hand_landmarks"
   input_stream: "HANDEDNESS:handedness"
