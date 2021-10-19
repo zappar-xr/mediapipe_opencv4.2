@@ -27,32 +27,32 @@ constexpr char kTickTag[] = "TICK";
 constexpr char kFPSTag[] = "FPS";
 
 
-class TickCalculator : public CalculatorBase {
- public:
+// class TickCalculator : public CalculatorBase {
+//  public:
 
-  // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
-  // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
-  static absl::Status GetContract(CalculatorContract* cc) {
-    for (CollectionItemId id = cc->Inputs().BeginId();
-         id < cc->Inputs().EndId(); ++id) {
-      cc->Inputs().Get(id).SetAny();
-    }
-    cc->Outputs().Tag(kTickTag).Set<int64>();
-    return absl::OkStatus();
-  }
+//   // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
+//   // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
+//   static absl::Status GetContract(CalculatorContract* cc) {
+//     for (CollectionItemId id = cc->Inputs().BeginId();
+//          id < cc->Inputs().EndId(); ++id) {
+//       cc->Inputs().Get(id).SetAny();
+//     }
+//     cc->Outputs().Tag(kTickTag).Set<int64>();
+//     return absl::OkStatus();
+//   }
 
-  absl::Status Open(CalculatorContext* cc) final {
-    cc->SetOffset(TimestampDiff(0));
-    return absl::OkStatus();
-  }
+//   absl::Status Open(CalculatorContext* cc) final {
+//     cc->SetOffset(TimestampDiff(0));
+//     return absl::OkStatus();
+//   }
 
-  absl::Status Process(CalculatorContext* cc) final {
-    auto tick = absl::make_unique<int64>(cv::getTickCount() );
-    cc->Outputs().Tag(kTickTag).Add(tick.release(), cc->InputTimestamp());
-    return absl::OkStatus();
-  }
-};
-REGISTER_CALCULATOR(TickCalculator);
+//   absl::Status Process(CalculatorContext* cc) final {
+//     auto tick = absl::make_unique<int64>(cv::getTickCount() );
+//     cc->Outputs().Tag(kTickTag).Add(tick.release(), cc->InputTimestamp());
+//     return absl::OkStatus();
+//   }
+// };
+// REGISTER_CALCULATOR(TickCalculator);
 
 
 class ProcessCalculator : public CalculatorBase {
