@@ -92,6 +92,7 @@ class FPSCalculator : public CalculatorBase {
 
     cc->Inputs().Get(kTickTag, 0).Set<int64>();
     cc->Inputs().Get(kTickTag, 1).Set<int64>();
+    cc->InputSidePackets().Index(0).Set<int64>();
     cc->Outputs().Tag(kFPSTag).Set<int64>();
     // cc->Outputs().Index(1).Set<int64>();
     return absl::OkStatus();
@@ -111,6 +112,8 @@ class FPSCalculator : public CalculatorBase {
     //   }
     // }
     cc->SetOffset(TimestampDiff(0));
+    freq = cc->InputSidePackets().Index(0).Get<int64>();
+    std::cout << "freq: " << freq << std::endl; 
     return absl::OkStatus();
   }
 
@@ -126,11 +129,14 @@ const auto& tick_curr = cv::getTickCount();
 
 std::cout << tick_start << " " << tick_end << " " << tick_curr << std::endl;
 
-auto output_fps = absl::make_unique<int64>(cv::getTickFrequency() / (tick_end - tick_start));
+auto output_fps = absl::make_unique<int64>(freq / (tick_end - tick_start));
 std::cout << *output_fps << std::endl;
   cc->Outputs().Tag(kFPSTag).Add(output_fps.release(),  cc->InputTimestamp());
     return absl::OkStatus();
   }
+
+  private:
+  int64 freq = 0;
 };
 REGISTER_CALCULATOR(FPSCalculator);
 
@@ -140,6 +146,7 @@ absl::Status PrintHelloWorld() {
       ParseTextProtoOrDie<CalculatorGraphConfig>(R"pb(
         input_stream: "in"
         # output_stream: "out"
+        input_side_packet: "freq"
         output_stream: "fps"
 
         node {
@@ -156,6 +163,7 @@ absl::Status PrintHelloWorld() {
 
         node {
           calculator: "FPSCalculator"
+          input_side_packet: "freq"
           input_stream: "TICK:0:tick_start"
           input_stream: "TICK:1:tick_end"
           output_stream: "FPS:fps"
@@ -168,8 +176,16 @@ absl::Status PrintHelloWorld() {
   ASSIGN_OR_RETURN(OutputStreamPoller poller_fps,
                    graph.AddOutputStreamPoller("fps"));
 
-  MP_RETURN_IF_ERROR(graph.StartRun({}));
+
+  std::map<std::string, Packet> side_packets = {
+      {"freq", MakePacket<int64>(cv::getTickFrequency())},
+  };
+
+  MP_RETURN_IF_ERROR(graph.StartRun({side_packets}));
   // Give 10 input packets that contains the same std::string "Hello World!".
+
+
+
   for (int i = 0; i < 2; ++i) {
     MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
         "in", MakePacket<int>(i).At(Timestamp(i))));
