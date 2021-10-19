@@ -84,13 +84,13 @@ absl::Status RunMPPGraph() {
   ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
                    graph.AddOutputStreamPoller(kOutputStream));
 
-  std::map<std::string, mediapipe::Packet> side_packets = {
-      {"freq", mediapipe::MakePacket<int64>(cv::getTickFrequency())},
-  };
+  // std::map<std::string, mediapipe::Packet> side_packets = {
+  //     {"freq", mediapipe::MakePacket<int64>(cv::getTickFrequency())},
+  // };
 
-  MP_RETURN_IF_ERROR(graph.StartRun({side_packets}));
+  // MP_RETURN_IF_ERROR(graph.StartRun({side_packets}));
 
-
+  MP_RETURN_IF_ERROR(graph.StartRun({}));
 
 
   LOG(INFO) << "Start grabbing and processing frames.";

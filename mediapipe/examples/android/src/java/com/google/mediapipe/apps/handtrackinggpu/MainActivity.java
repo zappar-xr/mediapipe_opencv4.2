@@ -25,7 +25,7 @@ import com.google.mediapipe.components.FrameProcessor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opencv.core.Core;
+
 
 
 /** Main activity of MediaPipe hand tracking app. */
@@ -39,8 +39,6 @@ public class MainActivity extends com.google.mediapipe.apps.basic.MainActivity {
   private static final String OUTPUT_LANDMARKS_STREAM_NAME = "hand_landmarks";
 
 
-  private static final String INPUT_TICK_NAME = "input_tick";
-
   // Max number of hands to detect/process.
   private static final int NUM_HANDS = 2;
 
@@ -51,11 +49,12 @@ public class MainActivity extends com.google.mediapipe.apps.basic.MainActivity {
     AndroidPacketCreator packetCreator = processor.getPacketCreator();
     Map<String, Packet> inputSidePackets = new HashMap<>();
     inputSidePackets.put(INPUT_NUM_HANDS_SIDE_PACKET_NAME, packetCreator.createInt32(NUM_HANDS));
+    inputSidePackets.put("freq", packetCreator.createInt64(1000000000));
     processor.setInputSidePackets(inputSidePackets);
 
     // Add frame listener to PacketManagement system
-    mediaPipePacketManager = new MediaPipePacketManager();
-    processor.setOnWillAddFrameListener(mediaPipePacketManager);
+    // mediaPipePacketManager = new MediaPipePacketManager();
+    // processor.setOnWillAddFrameListener(mediaPipePacketManager);
 
     // To show verbose logging, run:
     // adb shell setprop log.tag.MainActivity VERBOSE
@@ -108,13 +107,13 @@ public class MainActivity extends com.google.mediapipe.apps.basic.MainActivity {
     @Override
     public void onWillAddFrame(long timestamp) {
 
-      Packet tickPacket = processor.getPacketCreator().createInt64(Core.getTickCount());
+      // Packet tickPacket = processor.getPacketCreator().createInt64(Core.getTickCount());
       // Packet tickPacket = processor.getPacketCreator().createInt64(System.nanoTime());
-      processor
-          .getGraph()
-          .addConsumablePacketToInputStream(INPUT_TICK_NAME, tickPacket, timestamp);
+      // processor
+      //     .getGraph()
+      //     .addConsumablePacketToInputStream(INPUT_TICK_NAME, tickPacket, timestamp);
      
-      tickPacket.release();
+      // tickPacket.release();
     }
   }
 

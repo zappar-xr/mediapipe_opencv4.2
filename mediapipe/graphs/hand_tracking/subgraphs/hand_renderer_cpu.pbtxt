@@ -10,7 +10,7 @@ input_stream: "IMAGE:input_image"
 input_stream: "TICK:0:tick_start"
 input_stream: "TICK:1:tick_end"
 
-input_side_packet: "freq"
+#input_side_packet: "freq"
 
 # Collection of detected/predicted hands, each represented as a list of
 # landmarks. (std::vector<NormalizedLandmarkList>)
@@ -213,7 +213,7 @@ node {
   calculator: "TickToRenderDataCalculator"
   input_stream: "TICK:0:tick_start"
   input_stream: "TICK:1:tick_end"
-  input_side_packet: "freq"
+  #input_side_packet: "freq"
   output_stream: "RENDER_DATA:fps_render_data"
 }
 

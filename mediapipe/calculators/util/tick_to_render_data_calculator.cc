@@ -63,7 +63,7 @@ namespace mediapipe
     int video_height_ = 0;
     int label_height_px_ = 0;
     int label_left_px_ = 0;
-    int64 freq = 0;
+    // int64 freq = 0;
   };
   REGISTER_CALCULATOR(TickToRenderDataCalculator);
 
@@ -72,7 +72,7 @@ namespace mediapipe
 
     cc->Inputs().Get(kTickTag, 0).Set<int64>();
     cc->Inputs().Get(kTickTag, 1).Set<int64>();
-    cc->InputSidePackets().Index(0).Set<int64>();
+    // cc->InputSidePackets().Index(0).Set<int64>();
     cc->Outputs().Tag(kRenderDataTag).Set<RenderData>();
 
     return absl::OkStatus();
@@ -81,7 +81,7 @@ namespace mediapipe
   absl::Status TickToRenderDataCalculator::Open(CalculatorContext *cc)
   {
     cc->SetOffset(TimestampDiff(0));
-    freq = cc->InputSidePackets().Index(0).Get<int64>();
+    // freq = cc->InputSidePackets().Index(0).Get<int64>();
     return absl::OkStatus();
   }
 
@@ -91,11 +91,11 @@ namespace mediapipe
 
 const auto& tick_start = cc->Inputs().Get(kTickTag, 0).Get<int64>();
 const auto& tick_end = cc->Inputs().Get(kTickTag, 1).Get<int64>();
-const auto& tick_curr = cv::getTickCount();
+// const auto& tick_curr = cv::getTickCount();
 
 // std::cout << tick_start << " " << tick_end << " " << tick_curr << std::endl;
 
-int output_fps = freq / (tick_end - tick_start);
+int output_fps = cv::getTickFrequency() / (tick_end - tick_start);
 
 
     RenderData render_data;

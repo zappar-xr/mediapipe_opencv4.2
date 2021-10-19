@@ -6,7 +6,7 @@
 # CPU image. (ImageFrame)
 input_stream: "input_video"
 
-input_side_packet: "freq"
+#input_side_packet: "freq"
 
 # CPU image. (ImageFrame)
 output_stream: "output_video"
@@ -61,7 +61,7 @@ node {
   input_stream: "IMAGE:input_video"
   input_stream: "TICK:0:tick_start"
   input_stream: "TICK:1:tick_end"
-  input_side_packet: "freq"
+  #input_side_packet: "freq"
   input_stream: "DETECTIONS:multi_palm_detections"
   input_stream: "LANDMARKS:landmarks"
   input_stream: "HANDEDNESS:handedness"
