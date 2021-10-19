@@ -33,7 +33,10 @@ class TickCalculator : public CalculatorBase {
   // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
   // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
   static absl::Status GetContract(CalculatorContract* cc) {
-    cc->Inputs().Index(0).SetAny();
+    for (CollectionItemId id = cc->Inputs().BeginId();
+         id < cc->Inputs().EndId(); ++id) {
+      cc->Inputs().Get(id).SetAny();
+    }
     cc->Outputs().Tag(kTickTag).Set<int64>();
     return absl::OkStatus();
   }
@@ -58,6 +61,8 @@ class ProcessCalculator : public CalculatorBase {
   // tj : note: have to set all inputs and outputs, otherwsie graph init will fail
   // tj : identified the stream either by index (no tag) or tag (has tag), same tags have to be differentiable by additional indices
   static absl::Status GetContract(CalculatorContract* cc) {
+
+
     cc->Inputs().Index(0).SetAny();
     cc->Outputs().Tag(kTickTag).Set<int64>();
     return absl::OkStatus();
@@ -122,7 +127,7 @@ const auto& tick_curr = cv::getTickCount();
 std::cout << tick_start << " " << tick_end << " " << tick_curr << std::endl;
 
 auto output_fps = absl::make_unique<int64>(cv::getTickFrequency() / (tick_end - tick_start));
-
+std::cout << *output_fps << std::endl;
   cc->Outputs().Tag(kFPSTag).Add(output_fps.release(),  cc->InputTimestamp());
     return absl::OkStatus();
   }
