@@ -206,6 +206,8 @@ class NonMaxSuppressionCalculator : public CalculatorBase {
     // Remove all but the maximum scoring label from each input detection. This
     // corresponds to non-maximum suppression among detections which have
     // identical locations.
+
+    // tj : here each detection is one of the 896 bbox with score > thres(here is 0.5)
     Detections pruned_detections;
     pruned_detections.reserve(input_detections.size());
     for (auto& detection : input_detections) {
@@ -213,6 +215,11 @@ class NonMaxSuppressionCalculator : public CalculatorBase {
         pruned_detections.push_back(detection);
       }
     }
+    // tj : if thres > 0.5, this step seems pointless. However, if assuming the thres = 0.3
+    // then there might be two lables for this bbox. this step is to remain the max lable
+    // only for each bbox
+
+
 
     // Copy all the scores (there is a single score in each detection after
     // the above pruning) to an indexed vector for sorting. The first value is
@@ -242,7 +249,9 @@ class NonMaxSuppressionCalculator : public CalculatorBase {
       NonMaxSuppression(indexed_scores, pruned_detections, max_num_detections,
                         cc, retained_detections);
     }
-
+    // tj : this step first sort the retained bbox, then add one by one to the 
+    // outputs, every time adding to the output, make sure there is no overlap > thres
+    // with the added bboxes.
     cc->Outputs().Index(0).Add(retained_detections, cc->InputTimestamp());
 
     return absl::OkStatus();
