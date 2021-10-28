@@ -126,6 +126,8 @@ node {
   output_stream: "ROI:hand_rect_from_palm_detection"
 }
 
+# tj : the OBB of palm, note it's normalized
+
 # Collects a NormalizedRect for each hand into a vector. Upon receiving the
 # BATCH_END timestamp, outputs the vector of NormalizedRect at the BATCH_END
 # timestamp.
@@ -164,6 +166,8 @@ node {
 # single_hand_rect at the fake timestamp. At the end of the loop, outputs the
 # BATCH_END timestamp for downstream calculators to inform them that all
 # elements in the vector have been processed.
+
+# tj : in each loop, only process one hand. note rect is obb here
 node {
   calculator: "BeginLoopNormalizedRectCalculator"
   input_stream: "ITERABLE:hand_rects"

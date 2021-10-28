@@ -88,7 +88,8 @@ class AssociationCalculator : public CalculatorBase {
   }
 
   absl::Status Process(CalculatorContext* cc) override {
-    auto get_non_overlapping_elements = GetNonOverlappingElements(cc);
+    auto get_non_overlapping_elements = GetNonOverlappingElements(cc); 
+    // tj : non overlapping elements from current input streams only (no prev stream)
     if (!get_non_overlapping_elements.ok()) {
       return get_non_overlapping_elements.status();
     }
@@ -106,6 +107,7 @@ class AssociationCalculator : public CalculatorBase {
 
       MP_RETURN_IF_ERROR(
           PropagateIdsFromPreviousToCurrent(prev_input_vec, &result));
+          // tj : the current overlapping box will overwrite the prev box, however, will take the prev box's id 
     }
 
     auto output = absl::make_unique<std::vector<T>>();
