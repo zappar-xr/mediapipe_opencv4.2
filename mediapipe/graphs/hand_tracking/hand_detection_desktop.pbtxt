@@ -22,7 +22,7 @@ node {
   input_stream: "IMAGE:input_video"
   output_stream: "DETECTIONS:output_detections"
 }
-
+# tj : output_detections is the AABB of 6 keypoints
 # Converts the detections to drawing primitives for annotation overlay.
 node {
   calculator: "DetectionsToRenderDataCalculator"

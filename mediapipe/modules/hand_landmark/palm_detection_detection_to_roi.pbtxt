@@ -29,6 +29,8 @@ node {
   }
 }
 
+# tj : use 0->2 as OBB axis for the palm
+
 # Expands and shifts the rectangle that contains the palm so that it's likely
 # to cover the entire hand.
 node {

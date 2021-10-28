@@ -80,13 +80,14 @@ node {
     }
   }
 }
-
+# tj : if prev_has_enough_hands, then there would be no palm_detection_image. therefore, no palm detection is performed.
 # Detects palms.
 node {
   calculator: "PalmDetectionCpu"
   input_stream: "IMAGE:palm_detection_image"
   output_stream: "DETECTIONS:all_palm_detections"
 }
+# tj : all_palm_detections are the AABBs of all the 6 keypoints
 
 # Makes sure there are no more detections than the provided num_hands.
 node {
