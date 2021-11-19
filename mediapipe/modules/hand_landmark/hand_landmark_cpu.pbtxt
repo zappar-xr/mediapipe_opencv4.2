@@ -40,6 +40,8 @@ node {
   }
 }
 
+
+# tj : handness is given in hand_landmark.tflite rather than palm_detection.tflite
 # Runs a TensorFlow Lite model on CPU that takes an image tensor and outputs a
 # vector of tensors representing, for instance, detection boxes/keypoints and
 # scores.
