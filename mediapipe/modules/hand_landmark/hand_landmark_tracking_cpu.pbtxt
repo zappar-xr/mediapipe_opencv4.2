@@ -87,7 +87,11 @@ node {
   input_stream: "IMAGE:palm_detection_image"
   output_stream: "DETECTIONS:all_palm_detections"
 }
-# tj : all_palm_detections are the AABBs of all the 6 keypoints
+# - tj : all_palm_detections are the AABBs of all the keypoints, also contain the keypoints' location.
+# note that detections in the outputs are sorted, which is done in the NonMaxSuppressionCalculator in
+# /home/seamanj/Software/mediapipe/mediapipe/modules/palm_detection/palm_detection_cpu.pbtxt
+
+
 
 # Makes sure there are no more detections than the provided num_hands.
 node {
@@ -153,6 +157,9 @@ node {
     }
   }
 }
+
+# - tj : note there is no input stream marked as PREV, so these two streams will be regarded as current streams equally.
+# hand_rects_from_palm_detections could be none, so the results are just herited from gated_prev_hand_rects_from_landmarks
 
 # Extracts image size.
 node {

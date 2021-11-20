@@ -16,7 +16,7 @@ node {
   output_stream: "DETECTIONS:output_detections"
 }
 
-# tj : the output of PalmDetectionCpu is AABB of 6 keypoints
+# tj : all_palm_detections are the AABBs of all the keypoints, also contain the keypoints' location.
 
 # Converts the detections to drawing primitives for annotation overlay.
 node {

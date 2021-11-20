@@ -125,6 +125,9 @@ node {
   }
 }
 
+# - tj : note that in this step, the detections are sorted by the scores.
+
+
 # Adjusts detection locations (already normalized to [0.f, 1.f]) on the
 # letterboxed image (after image transformation with the FIT scale mode) to the
 # corresponding locations on the same image with the letterbox removed (the

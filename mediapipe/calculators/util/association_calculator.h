@@ -107,7 +107,7 @@ class AssociationCalculator : public CalculatorBase {
 
       MP_RETURN_IF_ERROR(
           PropagateIdsFromPreviousToCurrent(prev_input_vec, &result));
-          // tj : the current overlapping box will overwrite the prev box, however, will take the prev box's id 
+          // tj : the current overlapping box will overwrite the prev box (if the iou > thres). here overwrite means that the current box will take the prev box's id 
     }
 
     auto output = absl::make_unique<std::vector<T>>();

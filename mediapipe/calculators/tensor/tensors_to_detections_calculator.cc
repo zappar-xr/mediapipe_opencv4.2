@@ -302,7 +302,7 @@ absl::Status TensorsToDetectionsCalculator::ProcessCPU(
     std::vector<int> detection_classes(num_boxes_);
 
     // Filter classes by scores.
-    for (int i = 0; i < num_boxes_; ++i) {
+    for (int i = 0; i < num_boxes_; ++i) { // tj :  num_boxes_ = 896
       int class_id = -1;
       float max_score = -std::numeric_limits<float>::max();
       // Find the top score for box i.
@@ -313,7 +313,7 @@ absl::Status TensorsToDetectionsCalculator::ProcessCPU(
             if (options_.has_score_clipping_thresh()) {
               score = score < -options_.score_clipping_thresh()
                           ? -options_.score_clipping_thresh()
-                          : score;
+                          : score; // tj : score_clipping_thresh = 100
               score = score > options_.score_clipping_thresh()
                           ? options_.score_clipping_thresh()
                           : score;
