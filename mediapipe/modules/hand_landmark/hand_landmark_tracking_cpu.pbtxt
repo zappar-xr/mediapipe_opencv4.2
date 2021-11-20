@@ -100,7 +100,7 @@ node {
   output_stream: "palm_detections"
   input_side_packet: "num_hands"
 }
-
+# -tj : just cut off the first two.
 # Extracts image size.
 node {
   calculator: "ImagePropertiesCalculator"
